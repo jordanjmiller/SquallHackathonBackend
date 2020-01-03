@@ -5,8 +5,8 @@ const userDb = require('./users-model');
 const db = require('../data/db-config');
 
 router.put('/user', async (req, res) => {
-    const {email, name} = req.body;
-    const newValues = {email};
+    // const {email, name} = req.body;
+    const newValues = req.body;
     Object.keys(newValues).forEach(key => newValues[key] === undefined && delete newValues[key])
     
     for(let val in newValues){
@@ -14,46 +14,22 @@ router.put('/user', async (req, res) => {
             newValues[val] = newValues[val].toLowerCase();
         } 
     };
-
-    let {password} = req.body;
-    const {newPassword} = req.body;
     
     try{
-        if (!password){
-            throw 4
-        }
-
-        if(email){
-            const foundEmail = await db('users')
-            .where({email: newValues.email})
-            .first();
-
-            if(foundEmail && foundEmail.email !== newValues.email){
-                throw 3
-            }
-        }
-
         const user = await db('users')
             .where({id: req.user.id})
             .first();
 
-        if(user && bcrypt.compareSync(password, user.password)){
-            console.log(password)
-            if(newPassword){
-                password = bcrypt.hashSync(newPassword, 8);
-            }
-            const updated = await userDb.update(req.user.id, newPassword ? {...newValues, password} : {...newValues});
+        if(user){
+            const updated = await userDb.update(req.user.id, {...newValues});
             if(updated){
                 const updatedUser = await userDb
                 .findBy({id: req.user.id})
-                .select('id', 'email');
-                
+                .select('*');
                 res.status(200).json({...updatedUser});
             }else{
                 throw 'User could not be updated'
             }
-        }else{
-            throw 4
         }
     }catch(err){
         console.log(err);
