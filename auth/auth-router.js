@@ -23,6 +23,7 @@ router.post('/register', (req, res) => {
   });
 router.post('/login', async (req, res) => {
     const {email, password} = req.body;
+    console.log(email, password);
     if(email && password){
         const user = await db('users as u').where({'u.email': email.toLowerCase()})
             .select('u.*')

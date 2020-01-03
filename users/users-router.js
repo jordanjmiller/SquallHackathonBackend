@@ -88,6 +88,23 @@ router.get('/user', async (req, res) => {
     }
 });
 
+router.get('/user/all', async (req, res) => {
+    try{
+        const user = await db('users as u')
+            .select('u.*')
+        if(user){
+            res.status(200).json(user)
+        }else{
+            console.log('get user 404 error', user);
+            res.status(404).json({message: `User with id ${req.user.id} not found.`});
+        }
+        
+    }catch(err){
+        console.log(err);
+        res.status(500).json({message: 'Error getting user information.'});
+    }
+});
+
 router.delete('/user', async (req, res) => {
     const {password} = req.body;
     // console.log('password', password);
