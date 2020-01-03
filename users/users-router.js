@@ -73,7 +73,7 @@ router.get('/user', async (req, res) => {
     try{
         const user = await db('users as u')
             .where({'u.id': req.user.id})
-            .select('u.id', 'u.email')
+            .select('u.*')
             .first();
         if(user){
             res.status(200).json(user)
