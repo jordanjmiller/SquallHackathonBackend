@@ -6,16 +6,17 @@ const Users = require('../users/users-model.js');
 const {generateToken} = require('./token.js');
 
 router.post('/register', (req, res) => {
-    const user = { email, password } = req.body;
-    for(let val in user){
-        if(typeof user[val] === 'string'){
-            user[val] = user[val].toLowerCase();
+    const { email, password } = req.body;
+    console.log('before', email);
+    for(let val in email){
+        if(typeof email[val] === 'string'){
+            email[val] = email[val].toLowerCase();
         } 
     };
-
+    console.log('after', email)
     if(email && password){
         const hash = bcrypt.hashSync(password, 14);
-        Users.add({ ...req.body, email: user.email, password: hash })
+        Users.add({ ...req.body, email: email, password: hash })
           .then(user => {
                 console.log(res.data)
                 res.status(200).json({ message: `User created successfully` });
