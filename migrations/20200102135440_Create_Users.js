@@ -8,7 +8,7 @@ exports.up = function(knex) {
         tbl.string('email', 255)
             .notNullable()
             .unique(); 
-        tbl.integer('phonenumber', 255)
+        tbl.bigInteger('phonenumber', 255)
             .notNullable()
             .unique();
         tbl.string('city', 255)
