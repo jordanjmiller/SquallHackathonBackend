@@ -9,11 +9,11 @@ router.put('/user', async (req, res) => {
     const newValues = req.body;
     Object.keys(newValues).forEach(key => newValues[key] === undefined && delete newValues[key])
     
-    for(let val in newValues){
-        if(typeof newValues[val] === 'string'){
-            newValues[val] = newValues[val].toLowerCase();
-        } 
-    };
+    // for(let val in newValues){
+    //     if(typeof newValues[val] === 'string'){
+    //         newValues[val] = newValues[val].toLowerCase();
+    //     } 
+    // };
     
     try{
         const user = await db('users')
