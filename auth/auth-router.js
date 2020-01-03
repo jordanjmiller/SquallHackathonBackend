@@ -8,15 +8,10 @@ const {generateToken} = require('./token.js');
 router.post('/register', (req, res) => {
     const { email, password } = req.body;
     console.log('before', email);
-    for(let val in email){
-        if(typeof email[val] === 'string'){
-            email[val] = email[val].toLowerCase();
-        } 
-    };
-    console.log('after', email)
+    console.log('after', email.toLowerCase())
     if(email && password){
         const hash = bcrypt.hashSync(password, 14);
-        Users.add({ ...req.body, email: email, password: hash })
+        Users.add({ ...req.body, email: email.toLowerCase(), password: hash })
           .then(user => {
                 console.log(res.data)
                 res.status(200).json({ message: `User created successfully` });
@@ -29,15 +24,18 @@ router.post('/register', (req, res) => {
   });
 router.post('/login', async (req, res) => {
     const {email, password} = req.body;
-    // console.log(email, password);
+    console.log(email, password, req.body);
     if(email && password){
         const user = await db('users as u').where({'u.email': email.toLowerCase()})
             .select('u.*')
             .first();
+            console.log('init user: ', user);
         if(user && bcrypt.compareSync(password, user.password)){
+            console.log('if user: ', user);
             const token = await generateToken(user);
             res.status(200).json({message: `Welcome ${email.toLowerCase()}`, token, user: {...user, password: undefined}});
         }else{
+            console.log('else user: ', user);
             res.status(403).json({message: 'Invalid email or password'});
         }
     }else{
