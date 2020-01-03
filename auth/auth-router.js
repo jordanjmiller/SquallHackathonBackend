@@ -6,11 +6,16 @@ const Users = require('../users/users-model.js');
 const {generateToken} = require('./token.js');
 
 router.post('/register', (req, res) => {
-    let { email, password } = req.body;
-  
+    const user = { email, password } = req.body;
+    for(let val in user){
+        if(typeof user[val] === 'string'){
+            user[val] = user[val].toLowerCase();
+        } 
+    };
+
     if(email && password){
         const hash = bcrypt.hashSync(password, 14);
-        Users.add({ ...req.body, password: hash })
+        Users.add({ ...req.body, email: user.email, password: hash })
           .then(user => {
                 console.log(res.data)
                 res.status(200).json({ message: `User created successfully` });
@@ -23,7 +28,7 @@ router.post('/register', (req, res) => {
   });
 router.post('/login', async (req, res) => {
     const {email, password} = req.body;
-    console.log(email, password);
+    // console.log(email, password);
     if(email && password){
         const user = await db('users as u').where({'u.email': email.toLowerCase()})
             .select('u.*')

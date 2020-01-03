@@ -4,8 +4,6 @@ const db = require('../data/db-config');
 const secret = process.env.JWT_SECRET;
 
 async function generateToken(user){
-    console.log('gadsgasdgasdhsadhsd')
-    console.log(secret);
     const payload = {
         subject: user.id,
     };
