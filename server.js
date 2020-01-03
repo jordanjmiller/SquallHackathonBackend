@@ -12,13 +12,6 @@ const alertRouter = require('./alert/alert-router.js');
 
 const server = express();
 
-
-  
-
-// const corsConfig = {
-//     origin: 'http://localhost:3002',
-//     credentials: true,
-// }
 server.use(helmet());
 server.use(cors());
 server.use(express.json());
