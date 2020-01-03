@@ -2,6 +2,7 @@ const db = require('../data/db-config');
 
 module.exports = {
     findBy,
+    findByMultiple,
     findById,
     add,
     update,
@@ -14,6 +15,12 @@ function findBy(value){
         .first();
 }
 
+function findByMultiple(value1, value2){
+    // console.log(value1, value2)
+    return db('users')
+        .where({...value1, ...value2})
+}
+
 function add(user){
     return db('users')
     .insert(user, 'id');
@@ -22,7 +29,7 @@ function add(user){
 function findById(id){
     return db('users as u')
     .where({'u.id': id})
-    .select('u.id', 'u.username', 'u.name', 'u.email',)
+    .select('u.id', 'u.email',)
     .first();
 }
 

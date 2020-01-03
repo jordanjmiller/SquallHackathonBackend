@@ -5,8 +5,8 @@ const userDb = require('./users-model');
 const db = require('../data/db-config');
 
 router.put('/user', async (req, res) => {
-    const {username, email, cohort, name} = req.body;
-    const newValues = {username, email, cohort, name};
+    const {email, name} = req.body;
+    const newValues = {email};
     Object.keys(newValues).forEach(key => newValues[key] === undefined && delete newValues[key])
     
     for(let val in newValues){
@@ -21,18 +21,6 @@ router.put('/user', async (req, res) => {
     try{
         if (!password){
             throw 4
-        }
-        if(username){
-            if(!(/^[a-z][a-z0-9_]*$/i.test(username))){
-                throw 1
-            }
-            const foundUsername = await db('users')
-            .where({username: newValues.username})
-            .first();
-
-            if(foundUsername && foundUsername.username !== newValues.username){
-                throw 2
-            }
         }
 
         if(email){
@@ -58,7 +46,7 @@ router.put('/user', async (req, res) => {
             if(updated){
                 const updatedUser = await userDb
                 .findBy({id: req.user.id})
-                .select('id', 'username', 'email', 'name', 'cohort');
+                .select('id', 'email');
                 
                 res.status(200).json({...updatedUser});
             }else{
@@ -70,12 +58,6 @@ router.put('/user', async (req, res) => {
     }catch(err){
         console.log(err);
         switch(err){
-            case 1:
-                res.status(400).json({message: 'Username must only contain characters A-Z, _, and 0-9. Username must start with a letter.'});
-                break;
-            case 2: 
-                res.status(422).json({message: `Username '${username}' is already in use.`});
-                break;
             case 3: 
                 res.status(422).json({message: `There is already an account associated with that email`});
                 break;                
@@ -91,7 +73,7 @@ router.get('/user', async (req, res) => {
     try{
         const user = await db('users as u')
             .where({'u.id': req.user.id})
-            .select('u.id', 'u.username', 'u.name', 'u.email')
+            .select('u.id', 'u.email')
             .first();
         if(user){
             res.status(200).json(user)
@@ -108,9 +90,9 @@ router.get('/user', async (req, res) => {
 
 router.delete('/user', async (req, res) => {
     const {password} = req.body;
-    console.log('password', password);
-    console.log(req.body);
-    console.log(req.body.password);
+    // console.log('password', password);
+    // console.log(req.body);
+    // console.log(req.body.password);
     try{
         if(password){
             const user = await db('users')

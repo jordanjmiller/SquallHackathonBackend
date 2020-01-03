@@ -1,84 +1,65 @@
-const router = require('express').Router();
+const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../data/db-config.js');
-const userDb = require('../users/users-model');
-const {generateToken} = require('./token.js');
 
-router.post('/register', async (req, res) => {
-    const user = {username, password, email, cohort} = req.body;
-    console.log(user);
-    for(let val in user){
-        if(typeof user[val] === 'string'){
-            user[val] = user[val].toLowerCase();
-        } 
-    };
-   
-    try{
-        if(!(username && password)){
-            throw 1
-        }else if(!(/^[a-z][a-z0-9_]*$/i.test(username))){
-            throw 2
-        }
+const Users = require('../users/users-model.js');
 
-        const foundUsername = await db('users')
-        .where({username: user.username})
-        .first();
+const router = express.Router();
 
-        if(foundUsername){
-            throw 3
-        }
-
-        // if(email){
-        //     const foundEmail = await db('users')
-        //     .where({email: user.email})
-        //     .first();
-
-        //     if(foundEmail){
-        //         throw 4
-        //     }
-        // }
-        
-        const [id] = await userDb.add({...user, password: bcrypt.hashSync(password, 8)});
-
-        const response = await db('users').select('id', 'username').where({id}).first();
-
-        res.status(201).json({id :response.id, username: response.username});
-    }catch(err){
-        if(err === 1){
-            res.status(400).json({message: `Username and password is required.`});
-        }else if(err === 2){
-            res.status(400).json({message: 'Username must only contain characters A-Z, _, and 0-9. Username must start with a letter.'});
-        }else if(err === 3){
-            res.status(422).json({message: `Username '${user.username}' is already in use.`});
-        // }else if(err === 4){
-        //     res.status(422).json({message: `There is already an account associated with that email`});
-        }else{
-            console.log(err);
-            res.status(500).json({message: 'Server could not add user'});
-        }
-        
+router.post('/register', (req, res) => {
+    let { email, password } = req.body;
+  
+    if(email && password){
+        const hash = bcrypt.hashSync(password, 14);
+        Users.add({ ...req.body, password: hash })
+          .then(user => {
+                console.log(res.data)
+                res.status(200).json({ message: `User created successfully` });
+          })
+          .catch(error => {
+              console.log(error);
+            res.status(500).json(error);
+          });
     }
-});
+  }); 
 
-router.post('/login', async (req, res) => {
-    console.log(req.body);
-    const {username, password} = req.body;
-    if(username && password){
-        const user = await db('users as u').where({'u.username': username.toLowerCase()}).first();
-        console.log(user);
-        console.log(user.password);
-        console.log(password);
-        if(user.password !== undefined && bcrypt.compareSync(password, user.password)){
-            console.log('hi');
-            console.log(user.password);
-            const token = await generateToken(user);
-            res.status(200).json({message: `Welcome ${username.toLowerCase()}`, token, user: {...user, password: undefined}});
-        }else{
-            res.status(403).json({message: 'Invalid username or password'});
+router.post('/login', (req, res) => {
+    let { email, password } = req.body;
+    // console.log('req body',req.body);
+    // console.log('email', email);
+    // console.log('password',password);
+
+  
+    Users.findBy({ email })
+      .then(user => {
+        // check that passwords match
+        if (user && bcrypt.compareSync(password, user.password)) {
+            req.session.email = email;
+            res.status(200).json({ message: `Welcome ${user.firstname}!` });
+        } else {
+          // we will return 401 if the password or username are invalid
+          // we don't want to let attackers know when they have a good username
+          res.status(401).json({ message: 'Invalid Credentials' });
         }
+      })
+      .catch(error => {
+          console.log(error);
+        res.status(500).json(error);
+      });
+  }); 
+
+  router.get('/logout', (req, res) => {
+    if(req.session){
+        req.session.destroy(err => {
+            if(err){
+                res.status(500).json({message: 'error logging out'});
+            }else{
+                res.status(200).json({message: 'farewell my good friend'});
+            }
+        });
     }else{
-        res.status(400).json({message: 'Please provide a username and password'});
+        res.status(400).json({message: 'you are already logged out'});
     }
-});
+})
+
 
 module.exports = router;
