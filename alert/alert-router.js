@@ -9,6 +9,24 @@ const myNumber = process.env.MY_PHONE;
 const client = require('twilio')(accountSid, authToken);
 
 
+
+router.post('/text', async (req, res) => {
+    const {number, message, api_key} = req.body;
+
+    if (api_key === process.env.TOP_SECRET_PASSCODE && number.length === 10){
+        client.messages
+        .create({
+            body: message,
+            from: twilioNumber,
+            to: number,
+        });
+        res.status(200).json({message: 'Messages sent successfully'});
+    }
+    else{
+        res.status(403).json({ message: 'Invalid Squall api_key' });
+    }
+});
+
 router.post('/ExtremeCold', async (req, res) => {
     const {city, api_key} = req.body;
     const cityObj = {city: city};
